@@ -15,6 +15,15 @@ class Neighbour {
         return this.ip;
     }
 
+    @Override
+    public String toString() {
+        return "Neighbour{" +
+                "ip='" + ip + '\'' +
+                ", port=" + port +
+                ", username='" + username + '\'' +
+                '}';
+    }
+
     public String getUsername() {
         return this.username;
     }

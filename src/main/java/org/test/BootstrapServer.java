@@ -29,39 +29,38 @@ public class BootstrapServer {
                 s = new String(data, 0, incoming.getLength());
 
                 //echo the details of incoming data - client ip : client port - client message
-                echo(incoming.getAddress().getHostAddress() + " : " + incoming.getPort() + " - " + s);
+                echo(incoming.getAddress().getHostAddress() + ":" + incoming.getPort() + " - " + s);
 
                 StringTokenizer st = new StringTokenizer(s, " ");
 
-                String length = st.nextToken();
                 String command = st.nextToken();
 
                 if (command.equals("REG")) {
-                    String reply = "REGOK ";
+                    StringBuilder reply = new StringBuilder("REGOK ");
 
                     String ip = st.nextToken();
                     int port = Integer.parseInt(st.nextToken());
                     String username = st.nextToken();
                     if (nodes.size() == 0) {
-                        reply += "0";
+                        reply.append("0");
                         nodes.add(new Neighbour(ip, port, username));
                     } else {
                         boolean isOkay = true;
                         for (int i = 0; i < nodes.size(); i++) {
                             if (nodes.get(i).getPort() == port) {
                                 if (nodes.get(i).getUsername().equals(username)) {
-                                    reply += "9998";
+                                    reply.append("9998");
                                 } else {
-                                    reply += "9997";
+                                    reply.append("9997");
                                 }
                                 isOkay = false;
                             }
                         }
                         if (isOkay) {
                             if (nodes.size() == 1) {
-                                reply += "1 " + nodes.get(0).getIp() + " " + nodes.get(0).getPort();
+                                reply.append("1 ").append(nodes.get(0).getIp()).append(" ").append(nodes.get(0).getPort());
                             } else if (nodes.size() == 2) {
-                                reply += "2 " + nodes.get(0).getIp() + " " + nodes.get(0).getPort() + " " + nodes.get(1).getIp() + " " + nodes.get(1).getPort();
+                                reply.append("2 ").append(nodes.get(0).getIp()).append(" ").append(nodes.get(0).getPort()).append(" ").append(nodes.get(1).getIp()).append(" ").append(nodes.get(1).getPort());
                             } else {
                                 Random r = new Random();
                                 int Low = 0;
@@ -72,15 +71,15 @@ public class BootstrapServer {
                                     random_2 = r.nextInt(High - Low) + Low;
                                 }
                                 echo(random_1 + " " + random_2);
-                                reply += "2 " + nodes.get(random_1).getIp() + " " + nodes.get(random_1).getPort() + " " + nodes.get(random_2).getIp() + " " + nodes.get(random_2).getPort();
+                                reply.append("2 ").append(nodes.get(random_1).getIp()).append(" ").append(nodes.get(random_1).getPort()).append(" ").append(nodes.get(random_2).getIp()).append(" ").append(nodes.get(random_2).getPort());
                             }
                             nodes.add(new Neighbour(ip, port, username));
                         }
                     }
 
-                    reply = String.format("%04d", reply.length() + 5) + " " + reply;
+                    reply.insert(0, String.format("%04d", reply.length() + 5) + " ");
 
-                    DatagramPacket dpReply = new DatagramPacket(reply.getBytes(), reply.getBytes().length, incoming.getAddress(), incoming.getPort());
+                    DatagramPacket dpReply = new DatagramPacket(reply.toString().getBytes(), reply.toString().getBytes().length, incoming.getAddress(), incoming.getPort());
                     sock.send(dpReply);
                 } else if (command.equals("UNREG")) {
                     String ip = st.nextToken();
